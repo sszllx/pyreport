@@ -1,18 +1,34 @@
-import aiohttp
-import asyncio
+import curio
+import curio_http
 
-async def get_status(url, id):
-    r = await aiohttp.get(url)
-    print(r.status, id)
-    r.close()
+async def fetch_one(url):
+    async with curio_http.ClientSession() as session:
+        response = await session.get(url)
+        content = await response.json()
+        return response, content
 
 
-tasks = []
-for i in range(100):
-    tasks.append(asyncio.ensure_future(get_status('https://api.github.com/events', id=i)))
+async def main(url_list):
+    tasks = []
 
+    for url in url_list:
+        task = await curio.spawn(fetch_one(url))
+        tasks.append(task)
+
+    for task in tasks:
+        response, content = await task.join()
+
+        print('GET %s' % response.url)
+        print(content)
+        print()
+
+
+url_list = [
+    'http://httpbin.org/delay/1',
+    'http://httpbin.org/delay/2',
+    'http://httpbin.org/delay/3',
+    'http://httpbin.org/delay/4',
+]
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(asyncio.wait(tasks))
-    loop.close()
+    curio.run(main(url_list))

@@ -40,7 +40,7 @@ class ProxyHandler:
                     self.apiUrl).read().decode().strip("\n")
                 print("proxy:", res)
                 self.proxy_list.append(res)
-                time.sleep(0.4)
+                time.sleep(2)
                 if (len(self.proxy_list) >= 10):
                     self.fetching = False
                     break
@@ -129,7 +129,7 @@ class Worker:
                             task = asyncio.ensure_future(
                                 self.__fetch(holder, addr + "&idfa=" + line))
                             self.tasks.append(task)
-                            if (len(self.tasks) == 10):
+                            if (len(self.tasks) == 15):
                                 print("counter: ", counter)
                                 counter += 1
                                 # restart prefetch thread

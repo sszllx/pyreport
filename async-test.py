@@ -1,5 +1,4 @@
 
-import aiohttp
 import asyncio
 import collections
 import requests
@@ -35,15 +34,18 @@ class ProxyHandler:
 
     def __preFetch(self):
         while 1:
-            self.fetching = True
-            res = urllib.request.urlopen(
-                self.apiUrl).read().decode().strip("\n")
-            print("proxy:", res)
-            self.proxy_list.append(res)
-            time.sleep(0.4)
-            if (len(self.proxy_list) >= 100):
-                self.fetching = False
-                break
+            try:
+                self.fetching = True
+                res = urllib.request.urlopen(
+                    self.apiUrl).read().decode().strip("\n")
+                print("proxy:", res)
+                self.proxy_list.append(res)
+                time.sleep(0.4)
+                if (len(self.proxy_list) >= 100):
+                    self.fetching = False
+                    break
+            except Exception as e:
+                print(e)
 
 
 class Holder:
@@ -97,11 +99,14 @@ class Worker:
 
         print("proxies::::", proxies)
 
-        requests.get(url,
-                     proxies=proxies,
-                     headers=headers,
-                     allow_redirects=True,
-                     timeout=10)
+        try:
+            requests.get(url,
+                         proxies=proxies,
+                         headers=headers,
+                         allow_redirects=True,
+                         timeout=10)
+        except Exception as e:
+            print(e)
         # print(res)
 
     def run(self):

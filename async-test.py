@@ -10,13 +10,14 @@ from threading import Thread
 
 class ProxyHandler:
 
-    def __init__(self):
+    def __init__(self, is_prefetch):
         self.proxy = {"https": ""}
         self.proxy_list = []
         self.order = "70d8ff78674398a42e90a879683582fd"
         self.apiUrl = "http://api.ip.data5u.com/dynamic/get.html?order=" + self.order
-        self.fetching = True
-        self.preFetch()
+        if is_prefetch:
+            self.fetching = True
+            self.preFetch()
 
     def getProxy(self):
         return self.proxy_list
@@ -46,6 +47,21 @@ class ProxyHandler:
                     break
             except Exception as e:
                 print(e)
+
+    def preFetchOnce(self):
+        while 1:
+            try:
+                res = urllib.request.urlopen(
+                    self.apiUrl).read().decode().strip("\n")
+                print("proxy:", res)
+                if res == "too many request":
+                    time.sleep(0.5)
+                    continue
+
+                return res
+            except Exception as e:
+                print(e)
+                time.sleep(1)
 
 
 class Holder:
@@ -90,12 +106,15 @@ class Worker:
         self.proxy_list = []
 
     @asyncio.coroutine
-    def __fetch(self, holder, url):
+    def __fetch(self, holder, proxy_handler, url, is_prefetch):
         headers = {}
         headers['User-Agent'] = holder.getUA()
 
         proxies = {"https": ""}
-        proxies["https"] = self.proxy_list[random.randint(0, len(self.proxy_list) - 1)]
+        if is_prefetch:
+            proxies["https"] = self.proxy_list[random.randint(0, len(self.proxy_list) - 1)]
+        else:
+            proxies["https"] = proxy_handler.preFetchOnce()
 
         print("proxies::::", proxies)
 
@@ -110,8 +129,9 @@ class Worker:
         # print(res)
 
     def run(self):
+        is_prefetch = False
         holder = Holder()
-        proxy_handler = ProxyHandler()
+        proxy_handler = ProxyHandler(is_prefetch)
         counter = 0
 
         for fi in holder.getFileList():
@@ -119,17 +139,18 @@ class Worker:
                 for line in f:
                     for addr in holder.getAddr():
 
-                        # waiting for prefetch proxies
-                        while proxy_handler.isFetching():
-                            time.sleep(1)
+                        if is_prefetch:
+                            # waiting for prefetch proxies
+                            while proxy_handler.isFetching():
+                                time.sleep(1)
 
                         try:
                             # asyncio.ensure_future(self.__for_test())
                             self.proxy_list = proxy_handler.getProxy().copy()
                             task = asyncio.ensure_future(
-                                self.__fetch(holder, addr + "&idfa=" + line))
+                                self.__fetch(holder, proxy_handler, addr + "&idfa=" + line, is_prefetch))
                             self.tasks.append(task)
-                            if (len(self.tasks) == 15):
+                            if (len(self.tasks) == 100):
                                 print("counter: ", counter)
                                 counter += 1
                                 # restart prefetch thread
@@ -145,3 +166,4 @@ class Worker:
 if __name__ == '__main__':
     worker = Worker()
     worker.run()
+    # TODO: treat remaining tasks

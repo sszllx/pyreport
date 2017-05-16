@@ -112,6 +112,7 @@ class Worker:
     def run(self):
         holder = Holder()
         proxy_handler = ProxyHandler()
+        counter = 0
 
         for fi in holder.getFileList():
             with open(fi, 'rt') as f:
@@ -129,6 +130,7 @@ class Worker:
                                 self.__fetch(holder, addr + "&idfa=" + line))
                             self.tasks.append(task)
                             if (len(self.tasks) == 100):
+                                print("counter: ", counter++)
                                 # restart prefetch thread
                                 proxy_handler.preFetch()
                                 self.loop.run_until_complete(

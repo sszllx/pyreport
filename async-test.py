@@ -48,7 +48,7 @@ class ProxyHandler:
             except Exception as e:
                 print(e)
 
-    def preFetchOnce(self):
+    def fetchOnce(self):
         while 1:
             try:
                 res = urllib.request.urlopen(
@@ -107,6 +107,7 @@ class Worker:
 
     @asyncio.coroutine
     def __fetch(self, holder, proxy_handler, url, is_prefetch):
+        print("fetch.....")
         headers = {}
         headers['User-Agent'] = holder.getUA()
 
@@ -114,7 +115,7 @@ class Worker:
         if is_prefetch:
             proxies["https"] = self.proxy_list[random.randint(0, len(self.proxy_list) - 1)]
         else:
-            proxies["https"] = proxy_handler.preFetchOnce()
+            proxies["https"] = proxy_handler.fetchOnce()
 
         print("proxies::::", proxies)
 
@@ -153,8 +154,9 @@ class Worker:
                             if (len(self.tasks) == 100):
                                 print("counter: ", counter)
                                 counter += 1
-                                # restart prefetch thread
-                                proxy_handler.preFetch()
+                                if is_prefetch:
+                                    # restart prefetch thread
+                                    proxy_handler.preFetch()
                                 self.loop.run_until_complete(
                                     asyncio.wait(self.tasks))
                                 self.tasks.clear()

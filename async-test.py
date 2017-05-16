@@ -130,7 +130,8 @@ class Worker:
                                 self.__fetch(holder, addr + "&idfa=" + line))
                             self.tasks.append(task)
                             if (len(self.tasks) == 10):
-                                print("counter: ", counter++)
+                                print("counter: ", counter)
+                                counter += 1
                                 # restart prefetch thread
                                 proxy_handler.preFetch()
                                 self.loop.run_until_complete(

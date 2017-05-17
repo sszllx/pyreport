@@ -106,7 +106,7 @@ class Worker:
         proxy_handler = ProxyHandler()
         max_tasks = 100
         index = 0
-        
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_tasks) as executor:
             for fi in holder.getFileList():
                 with open(fi, 'rt') as f:
@@ -119,6 +119,7 @@ class Worker:
 if __name__ == '__main__':
     worker = Worker()
     worker.run()
+    print("Finish.......................")
 
 # with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 # 	for i in range(0, 9):

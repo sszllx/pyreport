@@ -35,7 +35,7 @@ class ProxyHandler:
                 time.sleep(1)
 
     def getProxy(self):
-    	return self.proxy
+        return self.proxy
 
 
 class Holder:
@@ -55,8 +55,8 @@ class Holder:
         self.addrList.append(
             "https://global.ymtracking.com/trace?offer_id=5065577&aff_id=104991")
         self.fileList.append("1.mobile.id")
-        # self.fileList.append("3.mobile.id")
-        # self.fileList.append("7.mobile.id")
+        self.fileList.append("3.mobile.id")
+        self.fileList.append("7.mobile.id")
         self.ua_str = ["Mozilla/5.0 (iPad; CPU OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53",
                        "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10B350 Safari/8536.25",
                        "Mozilla/5.0 (iPad; CPU OS 5_1_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9B206 Safari/7534.48.3",
@@ -73,6 +73,7 @@ class Holder:
 
 
 class Worker:
+
     def __init__(self):
         self.counter = 0
 
@@ -86,26 +87,25 @@ class Worker:
 
         while proxy["https"] == "":
             print("proxy empty")
-            sleep(0.5)
+            time.sleep(0.5)
 
         try:
             print("url: ", url)
             print("proxy: ", proxy)
             requests.get(url,
-                         proxies = proxy,
-                         headers = headers,
-                         allow_redirects = True,
-                         timeout = 10)
+                         proxies=proxy,
+                         headers=headers,
+                         allow_redirects=True,
+                         timeout=10)
             print("total counter: ", self.counter)
         except Exception as e:
             print(e)
-
 
     def run(self):
         holder = Holder()
         proxy_handler = ProxyHandler()
         max_tasks = 100
-        index = 0
+        # index = 0
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_tasks) as executor:
             for fi in holder.getFileList():
@@ -114,7 +114,8 @@ class Worker:
                         for addr in holder.getAddr():
                             time.sleep(0.2)
                             executor.submit(self.request, holder,
-                                proxy_handler, addr + "&idfa=" + line)
+                                            proxy_handler,
+                                            addr + "&idfa=" + line)
 
 if __name__ == '__main__':
     worker = Worker()

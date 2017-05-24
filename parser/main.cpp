@@ -1,11 +1,8 @@
 #include <QtCore>
 #include <QDebug>
+#include <QSharedPointer>
 
-const char filename[4][32] = {
-                              "1.mobile.log",
-                              "3.mobile.log",
-                              "5.mobile.log",
-                              "7.mobile.log"};
+#include "downloader.h"
 
 static void create_idfile(QString filename)
 {
@@ -17,9 +14,15 @@ static void create_idfile(QString filename)
   QFile outfile(out_filename);
   QTextStream out(&outfile);
 
-  // TODO: check failed
-  infile.open(QIODevice::ReadOnly | QIODevice::Text);
-  outfile.open(QIODevice::WriteOnly | QIODevice::Text);
+  if (!infile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      qDebug() << "infile open failed";
+      return;
+  }
+
+  if (!outfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+      qDebug() << "outfile open failed";
+      return;
+  }
 
   while (!infile.atEnd()) {
     QString data = infile.read(4096);
@@ -37,7 +40,7 @@ static void create_idfile(QString filename)
       index += 7;
 
       QString id = data.mid(index, 36);
-      out << id << "\n";//data << "\n\n\n\n\n\n+++++++++++++++++++++++++\n\n\n\n";
+      out << id << "\n";
 
       const char *ch = id.toStdString().c_str();
 
@@ -47,45 +50,13 @@ static void create_idfile(QString filename)
   }
 }
 
-void check()
-{
-  QStringList files;
-
-  files << "1.mobile.id";
-  files << "3.mobile.id";
-  files << "5.mobile.id";
-  files << "7.mobile.id";
-
-  foreach(QString item, files) {
-    QFile file(item);
-    qDebug() << "check" << item;
-
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
-    while (!file.atEnd()) {
-      QString line = file.readLine();
-      if (line.size() != 37) {
-        qDebug() << "error!  " << line << line.size();
-        return;
-      }
-    }
-  }
-}
-
 int main(int argc, char *argv[])
 {
   QCoreApplication app(argc, argv);
 
-  if (argc > 1 && strcmp(argv[1], "check") == 0) {
-    check();
-    return 0;
-  }
+  QSharedPointer<Downloader> downloader(new Downloader);
 
-  int file_num = 4;
-  int index;
-
-  for (index = 0; index < file_num; index++) {
-    create_idfile(filename[index]);
-  }
+//  create_idfile("");
 
   qDebug() << "finish!";
 

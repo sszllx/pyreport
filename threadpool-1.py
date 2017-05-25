@@ -54,8 +54,8 @@ class Holder:
         # self.addrList.append("http://network.adsmarket.com/click/j2dxlV-hqZqMY26bYMp6w4iQbJZeoYOVjWqYnGShfZuNkGqdYaGAmLdibZhmoYOU?dp=475b7bf70-7fd2-4e79-3826d7ee04223371bc19319918dee38075c1ba5fcbd000e&dp2=104991&dp3=")
         self.addrList.append(
             "https://global.ymtracking.com/trace?offer_id=5065577&aff_id=104991")
-        self.fileList.append("1.mobile.id")
-        self.fileList.append("3.mobile.id")
+        # self.fileList.append("1.mobile.id")
+        # self.fileList.append("3.mobile.id")
         self.fileList.append("7.mobile.id")
         self.ua_str = ["Mozilla/5.0 (iPad; CPU OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53",
                        "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10B350 Safari/8536.25",
@@ -96,7 +96,7 @@ class Worker:
                          proxies=proxy,
                          headers=headers,
                          allow_redirects=True,
-                         timeout=10)
+                         timeout=2)
             print("total counter: ", self.counter)
         except Exception as e:
             print(e)

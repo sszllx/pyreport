@@ -4,8 +4,8 @@
 #include <QtNetwork>
 
 #define CHECK_UPDATE_INTERVAL 1000 * 60 * 60 // 1 hour
-// #define LOG_ADDR "http://123.59.43.13:8088/"
-#define LOG_ADDR "http://172.16.160.220/res/"
+#define LOG_ADDR "http://123.59.43.13:8088/"
+// #define LOG_ADDR "http://172.16.160.220/res/"
 #define OUTPUT_DIR "/out/"
 
 Downloader::Downloader(QObject *parent)
@@ -38,7 +38,8 @@ void Downloader::httpFinished()
 
     // TODO: 需要判断是否是第一次运行downloader
     parse();
-    start_download();
+    write_to_file();
+    // start_download();
 }
 
 void Downloader::httpReadyRead()
@@ -207,4 +208,23 @@ QString Downloader::saveFileName(const QUrl &url)
     }
 
     return basename;
+}
+
+void Downloader::write_to_file()
+{
+    QFile file(qApp->applicationDirPath() + OUTPUT_DIR + "url.list");
+    if (!file.open(QIODevice::WriteOnly)) {
+        qDebug() << "url list open failed";
+        return;
+    }
+
+    QTextStream out(&file);
+
+    QMap<QString, bool>::iterator iter = url_map.begin();
+    while (iter != url_map.end()) {
+        out << iter.key() << "\n";
+        ++iter;
+    }
+
+    qDebug() << "write finished!";
 }

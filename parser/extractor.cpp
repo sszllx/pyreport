@@ -1,11 +1,13 @@
-#include <QtCore>
-#include <QDebug>
-#include <QSharedPointer>
-
-#include "downloader.h"
 #include "extractor.h"
 
-static void create_idfile(QString filename)
+#include <QDir>
+#include <QDebug>
+#include <QFile>
+#include <QTextStream>
+
+#define LOG_PATH "D:\\code\\ad\\yeahmobi\\logs\\data\\ioslog\\"
+
+void Extractor::create_idfile(QString filename)
 {
   QFile infile(filename);
   QString out_filename;
@@ -51,18 +53,22 @@ static void create_idfile(QString filename)
   }
 }
 
-int main(int argc, char *argv[])
+
+Extractor::Extractor(QObject *parent) : QObject(parent)
 {
-  QCoreApplication app(argc, argv);
 
-  // QSharedPointer<Downloader> downloader(new Downloader);
+}
 
-//  create_idfile("");
+void Extractor::start_extract()
+{
+    QDir dir(LOG_PATH);
+    QFileInfoList list = dir.entryInfoList();
 
-  Extractor e;
-  e.start_extract();
+    qDebug() << list.size();
 
-  qDebug() << "finish!";
-
-  return app.exec();
+    for (int i = 0; i < list.size(); ++i) {
+        QFileInfo fileInfo = list.at(i);
+        qDebug() << fileInfo.absoluteFilePath();
+        create_idfile(fileInfo.absoluteFilePath());
+    }
 }

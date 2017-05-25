@@ -37,6 +37,7 @@ private:
     void do_download(QUrl url);
     bool saveToDisk(const QString &filename, QIODevice *data);
     QString saveFileName(const QUrl &url);
+    void write_to_file();
 };
 
 #endif // DOWNLOADER_H

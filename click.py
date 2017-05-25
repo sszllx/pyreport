@@ -2,6 +2,7 @@
 import asyncio
 import collections
 import concurrent.futures
+import os
 import requests
 import random
 import time
@@ -54,9 +55,10 @@ class Holder:
         # self.addrList.append("http://network.adsmarket.com/click/j2dxlV-hqZqMY26bYMp6w4iQbJZeoYOVjWqYnGShfZuNkGqdYaGAmLdibZhmoYOU?dp=475b7bf70-7fd2-4e79-3826d7ee04223371bc19319918dee38075c1ba5fcbd000e&dp2=104991&dp3=")
         self.addrList.append(
             "https://global.ymtracking.com/trace?offer_id=5065577&aff_id=104991")
-        self.fileList.append("1.mobile.id")
-        self.fileList.append("3.mobile.id")
-        self.fileList.append("7.mobile.id")
+        # self.fileList.append("1.mobile.id")
+        # self.fileList.append("3.mobile.id")
+        # self.fileList.append("7.mobile.id")
+        self.travelLogs()
         self.ua_str = ["Mozilla/5.0 (iPad; CPU OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53",
                        "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10B350 Safari/8536.25",
                        "Mozilla/5.0 (iPad; CPU OS 5_1_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9B206 Safari/7534.48.3",
@@ -70,6 +72,13 @@ class Holder:
 
     def getUA(self):
         return self.ua_str[random.randint(0, 3)]
+
+    def travelLogs(self):
+        cur_path = os.path.abspath(os.curdir)
+        cur_path += "/logs/"
+        for path, d, files in os.walk(cur_path):
+            for filename in files:
+                self.fileList.append(os.path.join(path, filename))
 
 
 class Worker:
@@ -96,7 +105,7 @@ class Worker:
                          proxies=proxy,
                          headers=headers,
                          allow_redirects=True,
-                         timeout=10)
+                         timeout=2)
             print("total counter: ", self.counter)
         except Exception as e:
             print(e)
@@ -104,7 +113,7 @@ class Worker:
     def run(self):
         holder = Holder()
         proxy_handler = ProxyHandler()
-        max_tasks = 100
+        max_tasks = 1000
         # index = 0
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_tasks) as executor:

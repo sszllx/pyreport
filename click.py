@@ -33,10 +33,11 @@ class ProxyHandler:
                     time.sleep(0.5)
                     continue
 
-                self.proxy["https"] = res
+                self.proxy["https"] = "https://" + res
+                self.proxy["http"] = "http://" + res
                 time.sleep(0.5)
             except Exception as e:
-                # print(e)
+                print(e)
                 time.sleep(1)
 
     def getProxy(self):
@@ -101,7 +102,7 @@ class Worker:
         self.counter += 1
         headers = {}
         headers['User-Agent'] = holder.getUA()
-        headers['Connection'] = 'close'
+        # headers['Connection'] = 'close'
 
         proxy = proxy_handler.getProxy()
 
@@ -109,6 +110,7 @@ class Worker:
             time.sleep(0.5)
 
         try:
+            print("cur counter: ", self.counter)
             self.logger.info("cur counter: %d" % self.counter)
             requests.get(url,
                          proxies=proxy,
@@ -121,7 +123,7 @@ class Worker:
     def run(self):
         holder = Holder()
         proxy_handler = ProxyHandler()
-        max_tasks = 16
+        max_tasks = 300
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_tasks) as executor:
             for fi in holder.getFileList():

@@ -1,13 +1,17 @@
+#!/usr/bin/python
 
-import asyncio
 import collections
 import concurrent.futures
+import logging
+import logging.handlers
 import os
 import requests
 import random
 import time
 import urllib
 from threading import Thread
+
+LOG_FILE = 'click.log'
 
 
 class ProxyHandler:
@@ -32,7 +36,7 @@ class ProxyHandler:
                 self.proxy["https"] = res
                 time.sleep(0.5)
             except Exception as e:
-                print(e)
+                # print(e)
                 time.sleep(1)
 
     def getProxy(self):
@@ -47,14 +51,12 @@ class Holder:
         self.__init()
 
     def __init(self):
-        # ofo
-        # self.addrList.append("https://lnk0.com/Mt8Edc?transaction_id=fb31665d0-832e-a698-d42c965aaf3f572602333e4cc8b0e52d9f0161f6b12000b&affiliate_id=104991&aff_sub8=")
         self.addrList.append(
             "https://global.ymtracking.com/trace?offer_id=5107479&aff_id=104991")
-        # elema
-        # self.addrList.append("http://network.adsmarket.com/click/j2dxlV-hqZqMY26bYMp6w4iQbJZeoYOVjWqYnGShfZuNkGqdYaGAmLdibZhmoYOU?dp=475b7bf70-7fd2-4e79-3826d7ee04223371bc19319918dee38075c1ba5fcbd000e&dp2=104991&dp3=")
         self.addrList.append(
             "https://global.ymtracking.com/trace?offer_id=5065577&aff_id=104991")
+        self.addrList.append(
+            "http://svr.dotinapp.com/ics?sid=1217&adid=4006512")
         self.travelLogs()
         self.ua_str = ["Mozilla/5.0 (iPad; CPU OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53",
                        "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10B350 Safari/8536.25",
@@ -82,36 +84,44 @@ class Worker:
 
     def __init__(self):
         self.counter = 0
+        self.logger = logging.getLogger("ClickLogging")
+        self.__setup_log()
+
+    def __setup_log(self):
+        handler = logging.handlers.RotatingFileHandler(
+            LOG_FILE, maxBytes=10 * 1024 * 1024, backupCount=5)  # 实例化handler
+        fmt = '%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s'
+        formatter = logging.Formatter(fmt)
+        handler.setFormatter(formatter)
+
+        self.logger.addHandler(handler)
+        self.logger.setLevel(logging.DEBUG)
 
     def request(self, holder, proxy_handler, url):
-        print("request....")
         self.counter += 1
         headers = {}
         headers['User-Agent'] = holder.getUA()
+        headers['Connection'] = 'close'
 
         proxy = proxy_handler.getProxy()
 
         while proxy["https"] == "":
-            print("proxy empty")
             time.sleep(0.5)
 
         try:
-            print("url: ", url)
-            print("proxy: ", proxy)
+            self.logger.info("cur counter: %d" % self.counter)
             requests.get(url,
                          proxies=proxy,
                          headers=headers,
                          allow_redirects=True,
-                         timeout=2)
-            print("total counter: ", self.counter)
+                         timeout=10)
         except Exception as e:
             print(e)
 
     def run(self):
         holder = Holder()
         proxy_handler = ProxyHandler()
-        max_tasks = 1000
-        # index = 0
+        max_tasks = 16
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_tasks) as executor:
             for fi in holder.getFileList():
@@ -122,12 +132,8 @@ class Worker:
                             executor.submit(self.request, holder,
                                             proxy_handler,
                                             addr + "&idfa=" + line)
+        self.logger.info("Finish total: %d" % self.counter)
 
 if __name__ == '__main__':
     worker = Worker()
     worker.run()
-    print("Finish.......................")
-
-# with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-# 	for i in range(0, 9):
-# 		executor.submit(dosth, i)

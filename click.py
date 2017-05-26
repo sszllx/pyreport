@@ -125,6 +125,7 @@ class Worker:
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_tasks) as executor:
             for fi in holder.getFileList():
+                self.logger.info(fi)
                 with open(fi, 'rt') as f:
                     for line in f:
                         for addr in holder.getAddr():

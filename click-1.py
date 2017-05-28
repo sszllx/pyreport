@@ -1,7 +1,7 @@
 
-import asyncio
+# import asyncio
 import collections
-import concurrent.futures
+# import concurrent.futures
 import logging
 import logging.handlers
 import os
@@ -12,9 +12,7 @@ import urllib
 import ssl
 from threading import Thread
 from requests_futures.sessions import FuturesSession
-#from requests_toolbelt import SSLAdapter
-#from requests.adapters import HTTPAdapter
-#from requests.packages.urllib3.poolmanager import PoolManager
+from concurrent.futures import ThreadPoolExecutor
 
 LOG_FILENAME = 'run_log'
 
@@ -80,7 +78,7 @@ class Holder:
 
     def travelLogs(self):
         cur_path = os.path.abspath(os.curdir)
-        cur_path += "/logs/"
+        cur_path += "/ioslogs/"
         for path, d, files in os.walk(cur_path):
             for filename in files:
                 self.fileList.append(os.path.join(path, filename))
@@ -92,21 +90,23 @@ class Worker:
         self.counter = 0
         self.click_logger = logging.getLogger("ClickLogger")
         self.__log_setup()
-        self.session = FuturesSession(max_workers=500)
+        self.session = FuturesSession(executor=ThreadPoolExecutor(max_workers=10))
         self.holder = Holder()
         self.proxy_handler = ProxyHandler()
 
     def __log_setup(self):
         self.click_logger.setLevel(logging.INFO)
         handler = logging.handlers.RotatingFileHandler(
-            LOG_FILENAME, maxBytes=10 * 1024 * 1024, backupCount=30)
+            LOG_FILENAME, maxBytes=10 * 1024 * 1024, backupCount=5)
         bf = logging.Formatter('{asctime} {name} {levelname:8s} {message}',
                                style='{')
         handler.setFormatter(bf)
         self.click_logger.addHandler(handler)
 
     def __do_redirect(self, sess, resp):
-        # print("resp:  ", resp.url)
+        print("resp:  ", resp.url)
+        sess.close()
+        sess = NULL
         headers = {}
         headers['User-Agent'] = self.holder.getUA()
         proxy = self.proxy_handler.getProxy()
@@ -116,9 +116,11 @@ class Worker:
                 background_callback=self.__do_redirect,
                 headers=headers,
                 proxies=proxy,
-                allow_redirects=True,
+                allow_redirects=False,
                 timeout=10)
+            resp = NULL
         except Exception as e:
+            resp = NULL
             print("redirect error:", e, resp.url)
 
     def run(self):
@@ -150,7 +152,7 @@ class Worker:
                             # future_.result()
                         except Exception as e:
                             print("request error:", e)
-        self.logger.info("Finish total: %d" % self.counter)
+        # self.click_logger.info("Finish total: %d" % self.counter)
 
 if __name__ == '__main__':
     worker = Worker()

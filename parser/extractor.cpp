@@ -1,9 +1,11 @@
 #include "extractor.h"
 
+#include <QCoreApplication>
 #include <QDir>
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
+#include <QTimer>
 
 #define LOG_PATH "D:\\code\\ad\\yeahmobi\\logs\\data\\ioslog\\"
 
@@ -33,6 +35,7 @@ void Extractor::create_idfile(QString filename)
     int totalLen = data.size();
 
     while ((index = data.indexOf("idfa", index)) > 0) {
+      QStringList ids;
       if (index + 42 >= totalLen) {
         index = totalLen - index;
         int pos = infile.pos();
@@ -43,7 +46,19 @@ void Extractor::create_idfile(QString filename)
       index += 7;
 
       QString id = data.mid(index, 36);
-      out << id << "\n";
+      // out << id << "\n";
+      bool same = false;
+      foreach (QString str, ids) {
+        if (str == id) {
+            same = true;
+            break;
+        }
+      }
+
+      if (!same && id != "00000000-0000-0000-0000-000000000000") {
+          ids << id;
+          out << id << "\n";
+      }
 
       const char *ch = id.toStdString().c_str();
 
@@ -61,14 +76,20 @@ Extractor::Extractor(QObject *parent) : QObject(parent)
 
 void Extractor::start_extract()
 {
-    QDir dir(LOG_PATH);
-    QFileInfoList list = dir.entryInfoList();
-
-    qDebug() << list.size();
+    QString cur_dir = QCoreApplication::applicationDirPath() + "/ioslogs/";
+    qDebug() << "cur dir:" << cur_dir;
+    QDir dir(cur_dir);
+    QStringList filter;
+    filter << "*.log";
+    QFileInfoList list = dir.entryInfoList(filter, QDir::Files);
 
     for (int i = 0; i < list.size(); ++i) {
         QFileInfo fileInfo = list.at(i);
         qDebug() << fileInfo.absoluteFilePath();
         create_idfile(fileInfo.absoluteFilePath());
+        QFile file(fileInfo.absoluteFilePath());
+        file.remove();
     }
+
+    QTimer::singleShot(1000*60*15, this, &Extractor::start_extract);
 }

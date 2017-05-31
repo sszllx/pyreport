@@ -78,7 +78,7 @@ class ProxyHandler1:
         try:
             if (len(self.proxy_list) > 0):
                 n = random.randint(0, len(self.proxy_list) - 1)
-                proxy_map["https"] = "https://" + self.proxy_list[n]
+                proxy_map["https"] = "http://" + self.proxy_list[n]
                 proxy_map["http"] = "http://" + self.proxy_list[n]
         except Exception as e:
             print(e)

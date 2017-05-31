@@ -97,8 +97,8 @@ class Holder:
             "https://global.ymtracking.com/trace?offer_id=5107479&aff_id=104991")
         self.addrList.append(
             "https://global.ymtracking.com/trace?offer_id=5065577&aff_id=104991")
-        # self.addrList.append(
-        #     "http://svr.dotinapp.com/ics?sid=1217&adid=4006512")
+        self.addrList.append(
+             "http://svr.dotinapp.com/ics?sid=1217&adid=4006512")
         self.travelLogs()
         self.ua_str = ["Mozilla/5.0 (iPad; CPU OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53",
                        "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10B350 Safari/8536.25",
@@ -126,6 +126,7 @@ class Worker:
 
     def __init__(self):
         self.counter = 0
+        self.already_run_list = []
         self.logger = logging.getLogger("ClickLogging")
         self.__setup_log()
 
@@ -173,10 +174,13 @@ class Worker:
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_tasks) as executor:
             for fi in holder.getFileList():
                 # self.logger.info(fi)
+                if (fi in self.already_run_list):
+                    continue
+                self.already_run_list.append(fi)
                 with open(fi, 'rt') as f:
                     for line in f:
                         for addr in holder.getAddr():
-                            time.sleep(0.2)
+                            time.sleep(0.15)
                             executor.submit(self.request, holder,
                                             proxy_handler,
                                             addr + "&idfa=" + line)
@@ -184,4 +188,6 @@ class Worker:
 
 if __name__ == '__main__':
     worker = Worker()
-    worker.run()
+    while True:
+        worker.run()
+        time.sleep(3)

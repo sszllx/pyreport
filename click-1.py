@@ -125,6 +125,7 @@ class Worker:
 
     def run(self):
         max_tasks = 16
+        futures = []
 
         proxy = self.proxy_handler.getProxy()
         while proxy["https"] == "":
@@ -137,18 +138,27 @@ class Worker:
                     for addr in self.holder.getAddr():
                         headers = {}
                         headers['User-Agent'] = self.holder.getUA()
-                        time.sleep(0.05)
+                        time.sleep(0.15)
                         self.counter += 1
                         print("cur counter: ", self.counter)
                         try:
                             # self.session.mount('https://',
                             #   SSLAdapter(ssl.PROTOCOL_TLSv1_1|PROTOCOL_TLSv1_2|ssl.PROTOCOL_SSLv3))
-                            self.session.get(
+                            future = self.session.get(
                                 addr + "&idfa=" + line, background_callback=self.__do_redirect,
                                 headers=headers,
                                 proxies=proxy,
                                 allow_redirects=True,
                                 timeout=10)
+                            futures.append(future)
+                            # futures[:] = []
+                            if (len(futures) == 10):
+                                for f in futures:
+                                    print("waitttttttttttttttttt")
+                                    f.result()
+                                print("cleannnnnnnnnnnnnnnnnnnn")
+                                futures[:] = []
+                            print("futures.size: ", len(futures))
                             # future_.result()
                         except Exception as e:
                             print("request error:", e)

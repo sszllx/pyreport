@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
 
 //  create_idfile("");
 
-  Extractor e;
-  e.start_extract();
+//  Extractor e;
+//  e.start_extract();
 
   qDebug() << "finish!";
 

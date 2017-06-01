@@ -149,15 +149,16 @@ class Worker:
 
             proxy = proxy_handler.getProxy()
 
+            print("proxy:", proxy)
             while proxy["https"] == "":
-                print("empty http proxy")
+                # print("empty http proxy")
                 time.sleep(0.5)
 
             # proxy['https'] = 'http://171.38.179.28:8123'
             # proxy['http'] = 'http://171.38.179.28:8123'
-            print("proxy:", proxy)
-            print("cur counter: ", self.counter)
-            # self.logger.info("cur counter: %d" % self.counter)
+            # print("proxy:", proxy)
+            # print("cur counter: ", self.counter)
+            self.logger.info("cur counter: %d" % self.counter)
             requests.get(url,
                          proxies=proxy,
                          headers=headers,
@@ -179,12 +180,13 @@ class Worker:
                 self.already_run_list.append(fi)
                 with open(fi, 'rt') as f:
                     for line in f:
+                        self.logger.info("cur idfa: %s" % line)
                         for addr in holder.getAddr():
                             time.sleep(0.15)
                             executor.submit(self.request, holder,
                                             proxy_handler,
                                             addr + "&idfa=" + line)
-        # self.logger.info("Finish total: %d" % self.counter)
+        self.logger.info("Finish total: %d" % self.counter)
 
 if __name__ == '__main__':
     worker = Worker()

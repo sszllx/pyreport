@@ -7,8 +7,6 @@
 #include <QTextStream>
 #include <QTimer>
 
-#define LOG_PATH "D:\\code\\ad\\yeahmobi\\logs\\data\\ioslog\\"
-
 void Extractor::create_idfile(QString filename)
 {
   QFile infile(filename);
@@ -29,16 +27,22 @@ void Extractor::create_idfile(QString filename)
       return;
   }
 
+  quint64 file_size = infile.size();
+  quint64 summary_size = 0;
+
   while (!infile.atEnd()) {
     QString data = infile.read(4096);
     int index = 0;
     int totalLen = data.size();
 
+    summary_size += totalLen;
+    qDebug() << "complete: " << (double)((double)summary_size/(double)file_size)*100;
+
     while ((index = data.indexOf("idfa", index)) > 0) {
       QStringList ids;
       if (index + 42 >= totalLen) {
         index = totalLen - index;
-        int pos = infile.pos();
+        quint64 pos = infile.pos();
         infile.seek(pos - index - 2);
         break;
       }
@@ -47,23 +51,23 @@ void Extractor::create_idfile(QString filename)
 
       QString id = data.mid(index, 36);
       // out << id << "\n";
-      bool same = false;
-      foreach (QString str, ids) {
-        if (str == id) {
-            same = true;
-            break;
-        }
-      }
+//      bool same = false;
+//      foreach (QString str, ids) {
+//        if (str == id) {
+//            same = true;
+//            break;
+//        }
+//      }
 
-      if (!same && id != "00000000-0000-0000-0000-000000000000") {
-          ids << id;
+      if (id != "00000000-0000-0000-0000-000000000000") {
+//          ids << id;
           out << id << "\n";
       }
 
-      const char *ch = id.toStdString().c_str();
+//      const char *ch = id.toStdString().c_str();
 
-      printf("%d %s", id_count++, ch);
-      printf("\r\033[k");
+//      printf("%d %s", id_count++, ch);
+//      printf("\r\033[k");
     }
   }
 }
@@ -88,7 +92,7 @@ void Extractor::start_extract()
         qDebug() << fileInfo.absoluteFilePath();
         create_idfile(fileInfo.absoluteFilePath());
         QFile file(fileInfo.absoluteFilePath());
-        file.remove();
+        // file.remove();
     }
 
     QTimer::singleShot(1000*60*15, this, &Extractor::start_extract);

@@ -33,7 +33,7 @@ static void create_idfile(QString filename)
     while ((index = data.indexOf("idfa", index)) > 0) {
       if (index + 42 >= totalLen) {
         index = totalLen - index;
-        int pos = infile.pos();
+        qint64 pos = infile.pos();
         infile.seek(pos - index - 2);
         break;
       }
@@ -59,9 +59,21 @@ int main(int argc, char *argv[])
 
 //  create_idfile("");
 
-//  Extractor e;
-//  e.start_extract();
+  Extractor e;
+  e.start_extract();
 
+#if 0
+  QFile file(".\\ioslogs\\10.10.29.15.2017-05-31-H22log.bak");
+  file.open(QIODevice::ReadOnly);
+
+  QFile out_file(".\\ioslogs\\test.log");
+  out_file.open(QIODevice::WriteOnly);
+
+  QByteArray data = file.read(1024*1024*1024);
+  out_file.write(data);
+  file.close();
+  out_file.close();
+#endif
   qDebug() << "finish!";
 
   return app.exec();

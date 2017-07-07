@@ -34,7 +34,7 @@ void ExtractorJson::startParse()
         qDebug() << fileInfo.absoluteFilePath();
         parse(fileInfo.absoluteFilePath());
         QFile file(fileInfo.absoluteFilePath());
-        // file.remove();
+        file.remove();
     }
 
     QTimer::singleShot(1000*60*15, this, &ExtractorJson::startParse);

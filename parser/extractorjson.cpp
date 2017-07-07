@@ -61,6 +61,8 @@ void ExtractorJson::parse(QString filename)
 
     QStringList idlist;
 
+    int toutiao = 0;
+
     while (!infile.atEnd()) {
         QString line = infile.readLine();
 
@@ -76,38 +78,71 @@ void ExtractorJson::parse(QString filename)
 
         QJsonObject jo = jd.object();
         QJsonObject josub = jo.value("app").toObject();
+        // app.publisher
+        QJsonObject pub_obj = josub.value("publisher").toObject();
+        QString publisher = pub_obj.value("id").toString();
+        if (publisher.size() == 0) {
+            publisher = "null";
+        }
+        // app.name
         QString name = josub.value("name").toString();
-        // qDebug() << name;
-        if (name.contains("头条")) {
-            continue;
+        if (name.size() == 0) {
+            name = "null";
         }
 
+        // qDebug() << name;
+//        if (name.contains("头条")) {
+//            toutiao++;
+//            // qDebug() << "toutiao counter:" << toutiao;
+//            continue;
+//        }
+
+        // adx
+        int adx = -1;
+        adx = jo.value("adx").toInt();
+
+        // localtime
+        QString localtime = jo.value("localtime").toString();
+        if (localtime.size() == 0) {
+            localtime = "null";
+        }
+
+        // idfa
         josub = jo.value("device").toObject();
         QString id = josub.value("idfa").toString();
         if (id.size() == 0) {
             id = josub.value("ifa").toString();
         }
 
-        if (id.size() == 0 ||
-                id == "00000000-0000-0000-0000-000000000000") {
-            continue;
+        if (id.size() == 0) {
+            id = "null";
         }
 
-        if (idlist.contains(id)) {
-            continue;
+        // ip
+        QString ip = josub.value("ip").toString();
+        if (ip.size() == 0) {
+            ip = "null";
         }
 
-        idlist << id;
-
-        // qDebug() << "size:" << idlist.size();
-#if 0
-        if (bf->contains(id.toStdString().c_str())) {
-//            qDebug() << id;
-            continue;
+        // ua
+        QString ua = josub.value("ua").toString();
+        if (ua.size() == 0) {
+            ua = "null";
         }
 
-        bf->insert(id.toStdString().c_str());
-#endif
-        out << id << "\n";
+        // geo
+        QJsonObject geo_obj = josub.value("geo").toObject();
+        double geo_lon = -1;
+        double geo_lat = -1;
+        if (!geo_obj.isEmpty()) {
+            geo_lon = geo_obj.value("lon").toDouble();
+            geo_lat = geo_obj.value("lat").toDouble();
+        }
+
+        out << id << "\t" << publisher << "\t"
+            << name << "\t" << adx << "\t"
+            << localtime << "\t" << ip << "\t"
+            << ua << "\t" << geo_lon << "," << geo_lat
+            << "\n";
     }
 }

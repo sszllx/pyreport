@@ -3,7 +3,7 @@
 #include <QSharedPointer>
 
 #include "downloader.h"
-//#include "extractor.h"
+// #include "extractor.h"
 #include "extractorjson.h"
 
 int main(int argc, char *argv[])
@@ -16,6 +16,9 @@ int main(int argc, char *argv[])
 
   ExtractorJson e;
   e.startParse();
+
+//  Extractor e;
+//  e.start_extract();
 
 #if 0
   QFile file(".\\ioslogs\\10.10.29.15.2017-05-31-H22log.bak");

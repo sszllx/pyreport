@@ -1,3 +1,4 @@
 moc_*
 build-*
 *.user
+ioslogs

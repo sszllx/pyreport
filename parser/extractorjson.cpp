@@ -70,12 +70,12 @@ void ExtractorJson::parse(QString filename)
         int index = line.indexOf("{");
         QByteArray jsonStr = line.mid(index, line.size());
 
-        QJsonParseError error;
-        QJsonDocument jd = QJsonDocument::fromJson(jsonStr, &error);
-        if (error.error != QJsonParseError::NoError) {
-            qDebug() << "error:" << error.errorString();
-            continue;
-        }
+//        QJsonParseError error;
+        QJsonDocument jd = QJsonDocument::fromJson(jsonStr);
+//        if (error.error != QJsonParseError::NoError) {
+//            qDebug() << "error:" << error.errorString();
+//            continue;
+//        }
 
         QJsonObject jo = jd.object();
         QJsonObject josub = jo.value("app").toObject();

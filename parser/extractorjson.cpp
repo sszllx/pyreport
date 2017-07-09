@@ -34,7 +34,7 @@ void ExtractorJson::startParse()
         qDebug() << fileInfo.absoluteFilePath();
         parse(fileInfo.absoluteFilePath());
         QFile file(fileInfo.absoluteFilePath());
-        file.remove();
+        // file.remove();
     }
 
     QTimer::singleShot(1000*60*15, this, &ExtractorJson::startParse);
@@ -61,18 +61,19 @@ void ExtractorJson::parse(QString filename)
 
     QStringList idlist;
 
-    int toutiao = 0;
+    int counter = 0;
 
     while (!infile.atEnd()) {
-        QString line = infile.readLine();
+        QByteArray line = infile.readLine().trimmed();
+        counter++;
 
         int index = line.indexOf("{");
-        QString jsonStr = line.mid(index, line.size());
+        QByteArray jsonStr = line.mid(index, line.size());
 
         QJsonParseError error;
-        QJsonDocument jd = QJsonDocument::fromJson(jsonStr.toUtf8(), &error);
+        QJsonDocument jd = QJsonDocument::fromJson(jsonStr, &error);
         if (error.error != QJsonParseError::NoError) {
-            qDebug() << error.errorString();
+            qDebug() << "error:" << error.errorString();
             continue;
         }
 
@@ -138,7 +139,6 @@ void ExtractorJson::parse(QString filename)
             geo_lon = geo_obj.value("lon").toDouble();
             geo_lat = geo_obj.value("lat").toDouble();
         }
-
         out << id << "\t" << publisher << "\t"
             << name << "\t" << adx << "\t"
             << localtime << "\t" << ip << "\t"

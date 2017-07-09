@@ -464,7 +464,7 @@ public:
           return;
       }
 
-      char *data = file.readAll().data();
+      // char *data = file.readAll().data();
 
    }
 

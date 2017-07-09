@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include <QTime>
 #include <QTimer>
+#include <QTextCodec>
 
 ExtractorJson::ExtractorJson(QObject *parent) : QObject(parent)
 {
@@ -64,18 +65,75 @@ void ExtractorJson::parse(QString filename)
     int counter = 0;
 
     while (!infile.atEnd()) {
-        QByteArray line = infile.readLine().trimmed();
+        QString line = infile.readLine().trimmed();
         counter++;
 
         int index = line.indexOf("{");
-        QByteArray jsonStr = line.mid(index, line.size());
+        int s_index = index;
+        int e_index = index;
+        QString jsonStr = line.mid(index, line.size());
 
-//        QJsonParseError error;
-        QJsonDocument jd = QJsonDocument::fromJson(jsonStr);
-//        if (error.error != QJsonParseError::NoError) {
-//            qDebug() << "error:" << error.errorString();
-//            continue;
-//        }
+        QString publisher = "null";
+        QString adx = "null";
+        index = jsonStr.indexOf("adx", s_index);
+        if (index > 0) {
+            index += 5;
+            adx = jsonStr.mid(index, 1);
+        }
+//        qDebug() << "adx:" << adx;
+
+        QString name = "null";
+        index = jsonStr.indexOf("app", s_index);
+        index = jsonStr.indexOf("name", index);
+        if (index > 0) {
+            index += 7;
+            e_index = jsonStr.indexOf(",", index);
+            name = jsonStr.mid(index, e_index - index - 2);
+        }
+//        qDebug() << "name:" << name;
+
+        QString localtime = "null";
+        index = jsonStr.indexOf("localtime", s_index);
+        if (index > 0) {
+            index += 12;
+            e_index = jsonStr.indexOf(":", index);
+            localtime = jsonStr.mid(index, e_index - index);
+        }
+//        qDebug() << "localtime:" << localtime;
+
+        QString id = "null";
+        index = jsonStr.indexOf("idfa", s_index);
+        if (index > 0) {
+            index += 7;
+            e_index = jsonStr.indexOf(",", index);
+            id = jsonStr.mid(index, e_index - index - 1);
+        } else {
+            index = jsonStr.indexOf("ifa", s_index);
+            if (index > 0) {
+                index += 6;
+                e_index = jsonStr.indexOf(",", index);
+                id = jsonStr.mid(index, e_index - index - 1);
+            }
+        }
+//        qDebug() << "idfa:" << id;
+
+        QString ua = "null";
+        index = jsonStr.indexOf("ua", s_index);
+        if (index > 0) {
+            index += 5;
+            e_index = jsonStr.indexOf("\",", index);
+            ua = jsonStr.mid(index, e_index - index);
+        }
+//        qDebug() << "ua:" << ua;
+
+#if 0
+        QJsonParseError error;
+        QJsonDocument jd = QJsonDocument::fromJson(jsonStrUtf8.toUtf8(), &error);
+        // QJsonDocument jd = QJsonDocument::fromJson(jsonStr, &error);
+        if (error.error != QJsonParseError::NoError) {
+            qDebug() << "error:" << error.errorString() << " offset:" << error.offset;
+            continue;
+        }
 
         QJsonObject jo = jd.object();
         QJsonObject josub = jo.value("app").toObject();
@@ -139,10 +197,10 @@ void ExtractorJson::parse(QString filename)
             geo_lon = geo_obj.value("lon").toDouble();
             geo_lat = geo_obj.value("lat").toDouble();
         }
-        out << id << "\t" << publisher << "\t"
+
+#endif
+        out << id << "\t"
             << name << "\t" << adx << "\t"
-            << localtime << "\t" << ip << "\t"
-            << ua << "\t" << geo_lon << "," << geo_lat
-            << "\n";
+            << localtime << "\t" << ua << "\n";
     }
 }
